@@ -19,6 +19,8 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import com.example.contactbook.Model.Contacts;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,14 +63,14 @@ public class Create_Contact_Activity extends AppCompatActivity {
         surname1 = getIntent().getStringExtra("surname");
         number1 = getIntent().getStringExtra("number");
         position = getIntent().getIntExtra("position",0);
-        //imgpath = getIntent().getStringExtra("imgpath");
+        imgpath = getIntent().getStringExtra("imgpath");
 
         if (getIntent().getExtras() != null)
         {
             name.setText(""+name1);
             surname.setText(""+surname1);
             number.setText(""+number1);
-            //image.setImageURI(Uri.parse(imgpath));
+            image.setImageURI(Uri.parse(imgpath));
         }
 
         back.setOnClickListener(new View.OnClickListener() {
@@ -79,13 +81,16 @@ public class Create_Contact_Activity extends AppCompatActivity {
             }
         });
 
-//        image.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
+        image.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 //                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.INTERNAL_CONTENT_URI);
 //                startActivityForResult(intent,100);
-//            }
-//        });
+                CropImage.activity()
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .start(Create_Contact_Activity.this);
+            }
+        });
 
         save.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,9 +137,9 @@ public class Create_Contact_Activity extends AppCompatActivity {
         });
     }
 
-//    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 //        if (requestCode == 100 && data != null)
 //        {
 //            imageuri = data.getData();
@@ -146,46 +151,69 @@ public class Create_Contact_Activity extends AppCompatActivity {
 //                throw new RuntimeException(e);
 //            }
 //            imagePath = saveToInternalStorage(bitmap);
-//            imagePath = imagePath + "/" + imageName;
+//            Log.d("TTT", "onActivityResult: "+imagePath);
+//            imagePath = imagePath+"/"+imageName;
+//            Log.d("TTT", "onActivityResult: "+imagePath);
 //        }
-//    }
-//
-//    private String saveToInternalStorage(Bitmap bitmapImage){
-//        //ContextWrapper cw = new ContextWrapper(getApplicationContext());
-//        // path to /data/data/yourapp/app_data/imageDir
-//        File directory = getDir("imageDir", Context.MODE_PRIVATE);
-//        // Create imageDir
-//        File mypath=new File(directory,imageName);
-//
-//        FileOutputStream fos = null;
-//        try {
-//            fos = new FileOutputStream(mypath);
-//            // Use the compress method on the BitMap object to write image to the OutputStream
-//            bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        } finally {
-//            try {
-//                fos.close();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return directory.getAbsolutePath();
-//    }
-//
-//    private void loadImageFromStorage(String path)
-//    {
-//        try {
-//            File f=new File(path);
-//            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-//            ImageView img=findViewById(R.id.image);
-//            img.setImageBitmap(b);
-//        }
-//        catch (FileNotFoundException e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                Uri resultUri = result.getUri();
+                image.setImageURI(resultUri);
+                try {
+                bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(),resultUri);
+            }catch (IOException e)
+            {
+                throw new RuntimeException(e);
+            }
+            imagePath = saveToInternalStorage(bitmap);
+            Log.d("TTT", "onActivityResult: "+imagePath);
+            imagePath = imagePath+"/"+imageName;
+            Log.d("TTT", "onActivityResult: "+imagePath);
+
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+            }
+        }
+    }
+
+    private String saveToInternalStorage(Bitmap bitmapImage){
+        //ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory,imageName);
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.PNG, 10, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return directory.getAbsolutePath();
+    }
+
+    private void loadImageFromStorage(String path)
+    {
+        try {
+            File f=new File(path);
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+            ImageView img=findViewById(R.id.image);
+            img.setImageBitmap(b);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
 }

@@ -53,7 +53,7 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
                 intent.putExtra("surname",contactslist.get(position).getSurname());
                 intent.putExtra("number",contactslist.get(position).getNumber());
                 intent.putExtra("position",position);
-               // intent.putExtra("imgpath",contactslist.get(position).getImgPath());
+                intent.putExtra("imgpath",contactslist.get(position).getImgPath());
                 mainActivity.startActivity(intent);
             }
         });
@@ -74,16 +74,16 @@ public class RecyclerView_Adapter extends RecyclerView.Adapter<RecyclerView_Adap
             recycler_name = itemView.findViewById(R.id.recycler_name);
         }
     }
-//    private void loadImageFromStorage(String path, ImageView recycler_image)
-//    {
-//        try {
-//            File f=new File(path);
-//            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
-//            recycler_image.setImageBitmap(b);
-//        }
-//        catch (FileNotFoundException e)
-//        {
-//            e.printStackTrace();
-//        }
-//    }
+    private void loadImageFromStorage(String path, ImageView recycler_image)
+    {
+        try {
+            File f=new File(path);
+            Bitmap b = BitmapFactory.decodeStream(new FileInputStream(f));
+            recycler_image.setImageBitmap(b);
+        }
+        catch (FileNotFoundException e)
+        {
+            e.printStackTrace();
+        }
+    }
 }
